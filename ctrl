@@ -1,0 +1,195 @@
+#!/usr/bin/env escript
+%% -*- erlang -*-
+
+%% ctrl is designed to control otp compliant erlang applications,
+%% from building to interfacing with
+
+appname() ->
+    erlangotp.
+
+main(Args) ->
+
+    os:cmd("/usr/local/bin/epmd -daemon"),
+    code:add_path("ebin"),
+    
+    {ok, _} = net_kernel:start([ctrl_node(), longnames]),
+    auth:set_cookie(cookie()),
+    
+    try dispatch(Args) 
+    catch throw:Error ->
+            io:format("Error running script:~n  ~p",[Error])
+    end.
+
+dispatch(["build" | _Args])    -> build();
+dispatch(["cookie" | _Args])   -> io:format("~p",[cookie()]);
+dispatch(["nodename" | _Args]) -> io:format("~p",[nodename()]);
+dispatch(["start" | _Args])    -> start();
+dispatch(["stop"])             -> stop().
+
+build() ->
+    ok = compile_and_load(nodename()),
+    ok = generate_release_file().
+
+generate_release_file() ->
+    App = atom_to_list(appname()),
+    Rel = make_rel_tuple(App, "1.0", get_deps_from_app()),
+    ok  = file:write_file(["ebin/",App,".rel"], fmt("~p.", [Rel])),
+    ok  = systools:make_script(App, [{path,["./ebin"]}, {outdir, "ebin"}]).
+
+get_deps_from_app() ->
+    {ok, [{application, _App, Vals}]} = file:consult("ebin/erlangotp.app"),
+    {applications, Apps} = lists:keyfind(applications, 1, Vals),
+    Apps ++ [appname()].
+
+compile_opts() ->
+     [debug_info, {outdir, "ebin"}, report_errors, report_warnings].
+
+compile_and_load(Node) ->    
+    [ begin
+          Module = compile(X, compile_opts()),
+          rpc:call(Node, code, delete, [Module]),
+          rpc:call(Node, code, purge, [Module]),
+          rpc:call(Node, code, load_file, [Module])
+      end || X <- filelib:wildcard("src/*.erl"), needs_compiled(X) ],
+    ok.
+
+start() ->
+
+    ok = ensure_config(),
+    
+    Cmd = fmt("run_erl -daemon /tmp/ /home/dale/lib/erlangotp.com/var/runerl_log "
+              "\"erl -name ~p -setcookie ~p -config ~s -pa ebin "
+              "-boot ebin/~p\"",
+              [nodename(), cookie(), config_path(), appname()]),
+    
+    io:format("Starting application: ~p~nwith: ~s~n",[appname(), Cmd]),
+    
+    case os:cmd(Cmd) of
+        []   -> ok;
+        Else ->
+            io:format("failed to boot:~n~s~n",[Else]),
+            ok
+    end.
+
+stop() ->
+    ok = rpc:call(nodename(), init, stop, []).
+
+ensure_config() ->    
+    case has_config() of
+        false -> copy_default_config();
+        true  -> ok
+    end.    
+
+has_config() ->
+    filelib:is_file(config_path()).
+
+read_config(Key) ->
+    {ok, [Config]}      = file:consult(config_path()),
+    {erlangotp, HNConf} = lists:keyfind(erlangotp, 1, Config),
+    {Key, Val}          = lists:keyfind(Key, 1, HNConf),
+    Val.
+
+default_config_path() ->
+    ["priv/", atol(appname()), ".config.default"].
+config_path() ->
+    ["var/", atol(appname()), ".config"].
+
+copy_default_config() ->
+    ok           = filelib:ensure_dir("var/"),
+    {ok, _Bytes} = file:copy(default_config_path(), config_path()),
+    ok.
+
+cookie() ->
+    read_config(cookie).
+
+nodename() ->
+    nodeatom(read_config(nodename)).
+
+nodeatom(Name) ->
+    Host     = string:strip(os:cmd("hostname"), both, $\n),
+    LongName = io_lib:format("~s@~s", [Name, Host]),    
+    ltoa(lists:flatten(LongName)).
+
+
+ctrl_node() ->
+    Fmt = "~2.10.0B-~2.10.0B-~2.10.0B",
+    {_, {H,M,S}} = calendar:universal_time(),
+    Date = io_lib:format(Fmt, [H,M,S]),
+    list_to_atom(lists:flatten(["ctrl-", Date, "@", net_adm:localhost()])).
+
+%% Check whether an erlang source file should be compiled, checking the
+%% age of its beam and included header files
+-spec needs_compiled(string()) -> true | false.
+needs_compiled(ErlFile) ->
+    
+    Beam = "ebin/"++ filename:basename(ErlFile,".erl") ++ ".beam",
+
+    
+    
+    case beam_lib:chunks(Beam, [abstract_code]) of
+        
+        {error, _, _} ->
+            true;
+        
+        {ok,{_,[{abstract_code,{_,Abstr}}]}} ->
+            
+            Hrls = [ Path || {attribute, _, file, {Path,_}} <- Abstr,
+                             filename:extension(Path) =:= ".hrl" ],
+            
+            Latest = lists:max([ filelib:last_modified(X)
+                                 || X <- [ErlFile|Hrls] ]),
+            
+            % if the beam is newer than the last change to any
+            % of the source files, don't need to compile
+            not(filelib:last_modified(Beam) > Latest);
+        
+        _ ->
+            true
+    end.
+
+%% Compile a module
+-spec compile(string(), list()) -> atom.
+compile(File, Options) ->
+    case compile:file(File, Options) of
+        {ok, FileName} ->
+            io:fwrite("OK: ~s~n", [File]),
+            FileName;
+        Error ->
+            io:fwrite("Error: ~p~n", [Error]),
+            erlang:halt(0)
+    end.
+
+%% given an application name, return its version
+-spec get_vsn(atom()) -> string().
+get_vsn(App) ->
+    ok        = load(App),
+    {ok, Vsn} = application:get_key(App, vsn),
+    Vsn.
+
+%% Load an otp application
+-spec load(atom()) -> ok.
+load(App) ->
+    case application:load(App) of
+        ok                           -> ok;             
+        {error, {already_loaded, _}} -> ok
+    end.
+
+%% build the release description
+-spec make_rel_tuple(string(), string(), list()) -> tuple().
+make_rel_tuple(App, Version, Deps) ->
+    {release, 
+     {App, Version}, {erts, erlang:system_info(version)},
+     [ {X, get_vsn(X)} || X <- Deps ]
+    }.
+
+%% Shorthand functions
+-spec fmt(string(), list()) -> string().
+fmt(Str, Args) ->
+    lists:flatten(io_lib:format(Str, Args)).
+
+-spec ltoa(list()) -> atom().
+ltoa(L) ->
+    list_to_atom(L).
+-spec atol(atom()) -> list().
+atol(A) ->
+    atom_to_list(A).

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <title>Home &mdash; erlangotp.com</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="/www/default.css" />    
+  </head>
+
+  <body>
+
+    <header>
+	  <h1><a href="/" title="Home Page">
+          erlang<em>otp</em><b>.com</b>
+      </a></h1>        
+      <form id="search" action="/search" method="GET">
+        <input type="search" placeholder="Search..." />
+        <input type="submit" value="Search" />
+      </form>
+    </header>
+    
+    <div id="content">
+      There is no page here, <a class="wiki-create">make one</a>
+    </div>
+    
+    <div id="wiki">
+      
+      <div id="panel">
+        <label>
+          <input type="checkbox" id="preview" />
+          <span>Preview</span>
+        </label>
+        <a href="http://daringfireball.net/projects/markdown/" 
+           id="markdown" target="blank">
+          markdown help
+        </a>
+      </div>
+
+      <div id="previewwrapper"></div>
+      
+      <div id="editwrapper">
+
+        <h2>You are editing "<span class="page-name"></span>"</h2>
+
+        <textarea></textarea>
+      </div>
+      
+      <input type="button" class="cancel-edit" value="cancel" />
+      <input type="button" class="save-page" value="submit" />
+      
+    </div>
+
+    <script src="/www/json2.js"></script>
+    <script src="/www/jquery-1.4.2.min.js"></script>
+    <script src="/www/showdown.js"></script>
+    <script src="/www/default.js"></script>
+  </body>
+
+</html>

@@ -1,0 +1,23 @@
+%% -*- erlang -*-
+[{erlangotp,
+  [
+   {docroot,  "/home/www"},
+   {wikiroot, "/home/erlangotpwiki"},
+   
+   {cookie, yaynewcookie}, 
+   {nodename, erlangotp},
+   {host,  {{127,0,0,1}, 9123}}
+  ]},
+ 
+ % Mnesia Config
+ {mnesia, [{dir, "var/db"}]},
+ 
+ % Development Config
+ {sasl,
+  [
+   {sasl_error_logger,        false},
+   {error_logger_mf_dir,      "var/sasl_logs"},
+   {error_logger_mf_maxbytes, 10485760},
+   {error_logger_mf_maxfiles, 10}
+  ]}
+].

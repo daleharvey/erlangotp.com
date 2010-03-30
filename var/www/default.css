@@ -1,0 +1,131 @@
+/* Yay, @font-face stuff */
+@font-face {
+	font-family : 'GrutchShadedRegular';
+	src         : url('/www/GrutchShaded.eot');
+	src         : local('GrutchShaded'), local('GrutchShaded'), 
+    url('/www/GrutchShaded.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: "Rockwell";
+    src: url("/www/Rockwell.ttf");
+}
+
+@font-face {
+    font-family: "Rockwell Bold";
+    src: url("/www/Rockwell-Bold.ttf");
+}
+
+
+/* Programatic stuff */
+#wiki { 
+    display:none; 
+}
+
+/* Default Tag Styles */
+html, body, p, h1, h2, h3, h4, h5, ul, li, form, input {
+    margin:0px;
+    padding:0px;
+}
+
+body {
+    color :#25221D;
+    font  :14px/1.7 Verdana,Tahoma,sans-serif;
+    padding-bottom:20px;
+}
+
+a {
+    cursor          :pointer;
+    color           :#0479A7;
+    text-decoration :none;
+}
+
+a:hover { 
+    text-decoration:underline; 
+}
+
+p { 
+    margin:0 0 1.7em;
+}
+
+ul {
+    margin-top:10px;
+}
+
+li { 
+    margin-left:30px; 
+}
+
+/* General Layout */
+#wrapper { 
+    width  : 940px;
+    margin : 0px auto;
+}
+header { 
+    display : block; 
+    margin  : 15px 0px; 
+}
+h1 a {
+    font            : 48px 'GrutchShadedRegular', Arial, sans-serif;
+    text-decoration : none;
+    color           : #333;
+    letter-spacing  : 0;
+}
+footer { 
+    margin-top :15px; 
+    font-size  :11px;
+    display    :block; 
+    padding    :3px 6px;
+    background :#EEE; 
+}
+
+pre  {
+    background  :none repeat scroll 0 0 #EFEFEF;
+    border-left :2px solid #CCCCCC;
+    color       :#111111;
+    font-family :"Courier New","Andale Mono",monospace;
+    font-size   :13px;
+    line-height :normal;
+    margin      :10px 0 10px 10px;
+    overflow    :auto;
+    padding     :5px;
+}
+
+#wiki { 
+    position:relative; 
+}
+#wiki textarea { 
+    width: 930px;
+    min-height:300px;
+    border:1px solid #888888;
+    padding:5px;
+}
+#wiki #panel {
+    position:absolute;
+    right:0px;
+    font-size:11px;
+    color:#666;
+}
+
+#editwrapper h2 { color:#999; font-weight:normal; font-size:16px; }
+#editwrapper h2 span { color:#000; }
+
+label, input { vertical-align:middle; }
+
+.preview { 
+    background:#eee; 
+    padding:3px; 
+    border: 1px solid #CCC; 
+    -moz-border-radius:2px; 
+}
+
+#btns { margin-top:5px; line-height:30px; }
+#btns a { margin-left:5px; font-size:11px; }
+#btns input { padding:5px; font-weight:bold; }
+
+.notice {
+    background:none repeat scroll 0 0 #EFF3F8;
+    border:1px solid #E1E4EA;
+    margin:10px 0px;
+    padding:5px;
+}

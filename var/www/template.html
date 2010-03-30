@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <title>Home &mdash; erlangotp.com</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="/www/default.css" />    
+  </head>
+
+  <body>
+
+    <div id="wrapper">
+      
+      <header>
+	    <h1><a href="/" title="Home Page">erlangotp.com</a></h1>        
+        <!-- <form id="search" action="/search" method="GET"> -->
+        <!--   <input type="search" placeholder="Search..." /> -->
+        <!--   <input type="submit" value="Search" /> -->
+        <!-- </form> -->
+      </header>
+      
+      <div id="content">{{ content }}</div>
+      
+      <div id="wiki">
+        
+        <div id="panel">
+          markdown enabled&nbsp;&nbsp;
+          <a href="/postingGuidelines" target="blank">help</a>
+          &nbsp;&nbsp;
+          <label class="preview">
+            <input type="checkbox" id="preview" />
+            <span>Preview</span>
+          </label>
+        </div>
+
+        <div id="previewwrapper"></div>
+        
+        <div id="editwrapper">
+          <h2>You are editing "<span class="page-name"></span>"</h2> 
+          <textarea></textarea>
+        </div>
+        
+        <div id="btns">
+          <input type="button" class="save-page" value="Save Page" />
+          <a class="cancel-edit">cancel</a>
+        </div>
+        
+      </div>
+
+      <footer>
+        <a class="edit-page">edit this page</a>
+      </footer>
+
+    </div>
+
+    <script src="/www/json2.js"></script>
+    <script src="/www/jquery-1.4.2.min.js"></script>
+    <script src="/www/showdown.js"></script>
+    <script src="/www/default.js"></script>
+  </body>
+
+</html>
